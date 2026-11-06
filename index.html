@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fleet Truck Breakdown Dashboard</title>
+<style>
+:root{--navy:#0b1f3a;--card:#143866;--line:#2a5288;--or:#ff7a1a;--am:#ffc247;--bl:#6fa8ff;--gr:#3ecf8e;--tx:#fff;--mu:#b9c9e0}
+*{box-sizing:border-box}
+html{font-size:clamp(11px,min(1.75vh,1.05vw),20px)}
+body{margin:0;background:var(--navy);color:var(--tx);font-family:'Segoe UI',Arial,sans-serif;padding:.5rem .8rem;display:flex;flex-direction:column}
+body.v1{height:100vh;overflow:auto}
+.hd{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap}
+h1{font-size:1.5rem;margin:0 0 .3rem}
+h2{font-size:1.05rem;margin:0 0 .35rem;color:var(--am)}
+.sub{font-size:.9rem;color:var(--mu);margin:0 0 .3rem}
+.bar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.5rem}
+.bar a,.bar button,.drop{font-size:.95rem;font-weight:700;border-radius:.4rem;padding:.3rem .8rem;cursor:pointer;text-decoration:none}
+.bar a{background:var(--card);color:#fff;border:2px solid var(--line)}
+.bar a.on{background:var(--or);border-color:var(--or)}
+.bar button{background:var(--am);color:var(--navy);border:0}
+.drop{border:2px dashed var(--or);color:#fff;background:transparent}
+select{font-size:.95rem;padding:.25rem .5rem;border-radius:.4rem;background:var(--card);color:#fff;border:2px solid var(--line);max-width:100%}
+.bar label{font-size:.95rem}
+.top{display:grid;grid-template-columns:2fr 1fr;gap:.5rem}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(6rem,1fr));gap:.5rem}
+.k{background:var(--card);border-left:.3rem solid var(--or);border-radius:.4rem;padding:.3rem .6rem}
+.k.g{border-color:var(--gr)}.k.a{border-color:var(--am)}
+.k b{display:block;font-size:1.9rem;line-height:1.05}
+.k span{font-size:.85rem;color:var(--mu);line-height:1.1}
+.gk{border-left-color:var(--gc);cursor:pointer;position:relative}
+.gk .ar{position:absolute;right:.4rem;top:.25rem;font-size:.75rem;font-weight:700;color:var(--gc);display:inline;margin:0}
+.gk.sel{outline:2px solid var(--gc)}
+.gk .gl{font-size:1.7rem;font-weight:800;line-height:1.05;color:var(--gc);white-space:nowrap}
+.gk .gi b{font-size:1rem;line-height:1.1;display:block}
+.gk .gi span{display:block;font-size:.8rem;color:var(--mu);line-height:1.15}
+.box{background:var(--card);border-radius:.5rem;padding:.35rem .5rem;display:flex;align-items:center;gap:.6rem}
+.box h2{margin:0;white-space:nowrap}
+.box .kpis{flex:1}
+.box .k{background:var(--navy)}
+.pg{display:none}
+body.v1 #p1{display:flex;flex-direction:column;gap:.5rem;flex:1;min-height:0}
+body.v2 #p2{display:block}
+.panel{background:var(--card);border-radius:.5rem;padding:.4rem .6rem;min-width:0}
+.panel.chart{display:flex;flex-direction:column;min-height:6rem;flex:1}
+#brandc{flex:1;display:flex;flex-direction:column;min-height:0}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.5rem}
+.row4{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:.5rem;flex:1;min-height:10rem}
+.lcol{display:flex;flex-direction:column;gap:.5rem;min-height:0}
+.pair2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;flex:0 1 auto;max-height:55%;min-height:0}
+.fillp{display:flex;flex-direction:column;overflow:auto;min-height:0}
+.fl{flex:1;min-height:0}
+.mt.fillt{width:100%;height:100%}.mt.fillt td,.mt.fillt th{padding:.12rem .8rem}
+.db{position:relative}.db i{position:absolute;left:.4rem;top:18%;height:64%;background:var(--or);opacity:.6;border-radius:.2rem}.db span{position:relative}
+.dayp{display:flex;flex-direction:column;min-height:0}
+.h2s{font-size:.95rem;margin:.5rem 0 .25rem}
+.scroll{flex:1;min-height:0;overflow:auto}
+.mt.wide,#days .mt{width:100%}.mt.wide td:nth-child(2),.mt.wide th:nth-child(2),.mt.wide td:nth-child(3),.mt.wide th:nth-child(3){text-align:left}
+.mt.wide th{position:sticky;top:0}
+.v{display:flex;align-items:flex-end;gap:.4rem;flex:1;min-height:4rem;padding-top:1.1rem}
+.c{flex:1;height:100%;min-width:0}
+.c.s{display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.c .p{font-size:.8rem;font-weight:700;color:var(--am);margin-bottom:.1rem;text-align:center}
+.c .b{width:100%;background:var(--or);border-radius:.3rem .3rem 0 0;color:#fff;font-weight:800;font-size:1rem;text-align:center;padding-top:.1rem;min-height:1.3rem}
+.l{display:flex;gap:.4rem;margin-top:.2rem}
+.l div{flex:1;font-size:.8rem;text-align:center;color:var(--mu);min-width:0;word-break:break-word}
+.l.rot div{writing-mode:vertical-rl;transform:rotate(180deg);height:4rem;text-align:left}
+.h{display:grid;grid-template-columns:minmax(0,50%) 1fr;gap:.4rem;align-items:center;margin-bottom:.2rem}
+.h .n{font-size:.85rem;line-height:1.1}
+.h .t{background:var(--navy);border-radius:.25rem;height:1.2rem}
+.h .f{background:var(--or);height:100%;border-radius:.25rem;display:flex;align-items:center;padding:0 .35rem;font-size:.95rem;font-weight:800;min-width:fit-content}
+.h .f.am{background:var(--am);color:var(--navy)}
+.h .f.bl{background:var(--bl);color:var(--navy)}
+.h .f.gr{background:var(--gr);color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:1rem}
+th{background:var(--or);text-align:left;padding:.3rem .6rem}
+td{padding:.3rem .6rem;border-bottom:1px solid var(--line)}
+tr:nth-child(even) td{background:#0f2d56}
+.mt{width:auto;font-size:.9rem}.mt td,.mt th{padding:.12rem .45rem}.mt td+td,.mt th+th{text-align:right;padding-left:1.4rem}.mt tr.tot td{font-weight:800;color:var(--am)}
+.empty{color:var(--mu)}
+@media(max-width:1100px){
+ html{font-size:15px}
+ body.v1{height:auto}
+ .top,.row4{grid-template-columns:1fr}
+ .grid{grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))}
+ .panel.chart{flex:none;height:16rem}.row4{flex:none;grid-template-rows:auto}.pair2{grid-template-columns:1fr;max-height:none}.scroll{max-height:18rem}
+}
+@page{size:letter landscape;margin:7mm}
+@media print{
+ html{font-size:8.5px}
+ body,body.v1{padding:0;height:auto;display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .noprint{display:none!important}
+ .pg{display:flex!important;flex-direction:column;gap:.5rem}
+ #p2{display:block!important}
+ .pg+.pg{break-before:page}
+ .top{grid-template-columns:2fr 1fr}.grid{grid-template-columns:repeat(5,1fr)}.row4{flex:none;height:auto;grid-template-columns:1.45fr 1fr}.panel.chart{flex:none;height:14rem}.pair2{max-height:none}.scroll{overflow:visible}
+}
+</style></head><body class="v1">
+<div class="hd"><h1>Fleet Truck Breakdown Dashboard</h1><p class="sub noprint">Upload the CSV to populate all cards, charts and tables.</p></div>
+<div class="bar noprint">
+ <a href="#dashboard" id="n1" class="on">1 · Overall Breakdown &amp; Repair Status</a><a href="#summary" id="n2">2 · Summary</a>
+ <label class="drop" id="drop"><b>Drop CSV Here</b> or Click to Browse<input type="file" id="f" accept=".csv" hidden></label>
+ <button onclick="window.print()">Print / Save As PDF</button>
+ <button id="conn">Connect Tracker</button><button id="rfs">Refresh</button><span id="src" class="empty"></span>
+ <label style="font-size:1.05rem">Parking Location <select id="loc"><option value="">Overall (All Locations)</option></select></label>
+</div>
+
+<div id="p1" class="pg">
+ <div class="top"><div class="kpis" id="top"></div><div class="box"><h2>Middle Mile</h2><div class="kpis" id="mm"></div></div></div>
+ <div class="grid" id="groups"></div>
+ <div class="row4">
+  <div class="lcol">
+   <div class="panel chart"><h2>Completed Repair Per Make / Model</h2><div id="brandc"></div></div>
+   <div class="pair2">
+    <div class="panel fillp"><h2>By Brand · Pending</h2><div id="brandp" class="fl"></div></div>
+    <div class="panel fillp"><h2>By Age Class</h2><div id="age" class="fl"></div></div>
+   </div>
+  </div>
+  <div class="panel dayp"><h2>By Ageing Days</h2><div id="days"></div><h2 class="h2s">Pending Vehicles · <span id="pvc">0</span></h2><div class="scroll" id="pv"></div></div>
+ </div>
+</div>
+
+<div id="p2" class="pg">
+ <h2>Summary</h2>
+ <div class="bar noprint">
+  <label style="font-size:1.05rem">Status <select id="stf"><option value="">All</option><option value="d">Completed</option><option value="p">Pending</option></select></label>
+  <label style="font-size:1.05rem">Repair Status <select id="rsf"><option value="">All Repair Status</option></select></label>
+  <span id="cnt" class="empty"></span>
+ </div>
+ <table><thead><tr><th>Plate Number</th><th>Age Class</th><th>Designation</th><th>Make</th><th>Ageing Days</th><th>Repair Status</th><th>Latest Detailed Status</th></tr></thead><tbody id="tb"></tbody></table>
+</div>
+
+<script>
+/* ===== EDIT HERE ===== column numbers are 1-based (A=1, C=3, F=6, T=20, AA=27) */
+const COL={plate:2,age:3,desig:4,mile:4,brand:6,park:5,days:11,rs:20,detail:25,pend:27};
+const PENDING_RE=/pending/i;   // value in column AA that counts as pending
+const DONE_RE=/complet/i;      // value in column T that counts as completed
+const MILE_ONLY='middle';                           // keep only rows whose mile type (column 4) contains this; '' keeps all rows
+const SHOW_DAYS=['91-120','121-180','181-250','251-1000'];   // ageing day ranges included in the Pending Vehicles list (By Ageing Days table shows all ranges)
+const SOURCE_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ0NK4i8SuRPFVQlKD7wHHf_EvmC_zTQKZJegssAXRXOOV7GvKo7kheFlkDJHM5Mz5MwKE2ppw-k7J3/pub?gid=2099832963&single=true&output=csv';   // optional: paste the tracker link here (Google Sheets link or published CSV link); or use the Connect Tracker button
+const REFRESH_MIN=5;   // auto-refresh interval in minutes (0 = off)
+const FLEET={'SOC 5':285,'SOC 6':263,'SOC 8':22,'SOC 9':59,'SOC 11':128};   // total trucks per parking
+// KPI per parking = (total trucks - pending) / total trucks (%). At or above KPI_TARGET = passed (green, arrow up); below = failed (red, arrow down)
+const KPI_TARGET=90,KPI_PASS='#3ecf8e',KPI_FAIL='#ff5a5f';
+const AGE_ONLY=['old','new'];                       // age class values to capture (column 3)
+const HIDE_RS=['completed','repair status'];        // hidden from the Repair status dropdown (Page 3)
+const HIDE_PARK=['assigned parking actual'];        // hidden from the Parking location dropdown
+// Repair status boxes (Page 2): [title, color class, statuses]
+const GROUPS=[
+ ['Inhouse Repair','',['IH: On-Going Repair / Diagnosis','IH: Vanleaks','IH: Overhauling','IH: Tire Job']],
+ ['Inventory Related','am',['IH: Awaiting Parts Delivery','IH: Awaiting PO']],
+ ['Insurance Claims','bl',['ACC: On-Going Repair','ACC: Glasswork Claim','ACC: Awaiting LOA','ACC: Pending Insurance Docs']],
+ ['Dealership Repair','gr',['Under Warranty']],
+ ['Other Operational Concerns','am',['Non-Technical Issue','Franchise Issue','Official Plate No. Issue','LTO Registration Issue',"Impound / Hold By Gov't"]]];
+/* ===================== */
+let D=[];
+const $=id=>document.getElementById(id);
+const norm=s=>(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const BK=[['0-3',0,3],['4-7',4,7],['8-14',8,14],['15-30',15,30],['31-60',31,60],['61-90',61,90],['91-120',91,120],['121-180',121,180],['181-250',181,250],['251-1000',251,1e9]];
+const isD=d=>DONE_RE.test(d.rs),isP=d=>PENDING_RE.test(d.pend);
+const pf=x=>x>=1?x.toFixed(1):x.toFixed(2);
+const pct=(n,t)=>t?(n/t*100).toFixed(1)+'%':'0.0%';
+function parse(t){const r=[];let row=[],c='',q=false;
+ for(let i=0;i<t.length;i++){const ch=t[i];
+  if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}
+  else if(ch=='"')q=true;else if(ch==','){row.push(c);c=''}
+  else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;row.push(c);r.push(row);row=[];c=''}
+  else c+=ch}
+ if(c||row.length){row.push(c);r.push(row)}return r}
+function load(text){
+ const rows=parse(text.replace(/^\uFEFF/,'')),h=rows[0].map(x=>x.trim());
+ const hi=(re,n)=>{const i=h.findIndex(x=>re.test(x));return i<0?n-1:i};
+ const pi=hi(/plate/i,COL.plate),di=hi(/^(ageing|aging) days$/i,COL.days);
+ const g=(r,i)=>(r[i]||'').trim();
+ D=rows.slice(1).filter(r=>r.some(x=>x.trim())).map(r=>({
+  plate:g(r,pi),age:g(r,COL.age-1)||'N/A',desig:g(r,COL.desig-1),mile:g(r,COL.mile-1).toLowerCase(),brand:g(r,COL.brand-1)||'N/A',
+  park:g(r,COL.park-1),rs:g(r,COL.rs-1),pend:g(r,COL.pend-1),detail:g(r,COL.detail-1),dt:g(r,di),days:parseFloat(r[di])})).filter(d=>!MILE_ONLY||d.mile.includes(MILE_ONLY));
+ const pl=$('loc').value,pr=$('rsf').value;
+ const hp=HIDE_PARK.map(norm),ps=[...new Set(D.map(d=>d.park).filter(x=>x&&!hp.includes(norm(x))))].sort();
+ $('loc').innerHTML='<option value="">Overall (All Locations)</option>'+ps.map(p=>`<option>${p}</option>`).join('');
+ $('rsf').innerHTML='<option value="">All Repair Status</option>'+[...new Set(D.map(d=>d.rs).filter(x=>x&&!HIDE_RS.map(norm).includes(norm(x))))].sort().map(p=>`<option>${p}</option>`).join('');
+ if([...$('loc').options].some(o=>o.value==pl))$('loc').value=pl;
+ if([...$('rsf').options].some(o=>o.value==pr))$('rsf').value=pr;
+ render()}
+const kp=(v,l,c)=>`<div class="k ${c||''}"><b>${v}</b><span>${l}</span></div>`;
+const pbar=(d,p)=>d+p?`<div class="d" style="width:${d/(d+p)*100}%">${d}</div><div class="p" style="width:${p/(d+p)*100}%">${p}</div>`:'';
+function mileBox(el,a){
+ const d=a.filter(isD).length,p=a.filter(isP).length;
+ $(el).innerHTML=kp(d,'Completed Repairs','g')+kp(p,'Pending Repairs');
+}
+function vbars(el,items,total,rot){
+ const mx=Math.max(1,...items.map(i=>i[1]));
+ $(el).innerHTML=items.length?`<div class="v">${items.map(([n,v])=>`<div class="c s"><div class="p">${pf(v/total*100)}%</div><div class="b" style="height:${Math.max(8,v/mx*78)}%">${v}</div></div>`).join('')}</div><div class="l${rot?' rot':''}">${items.map(i=>`<div>${i[0]}</div>`).join('')}</div>`:'<p class="empty">No Data</p>'}
+function mtable(el,head,rows,fill){
+ const tot=head.slice(1).map((_,j)=>rows.reduce((s,r)=>s+r[j+1],0));
+ $(el).innerHTML=rows.length?`<table class="mt${fill?' fillt':''}"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}<tr class="tot"><td>Total</td>${tot.map(t=>`<td>${t}</td>`).join('')}</tr></tbody></table>`:'<p class="empty">No Data</p>'}
+const cnt=(a,f)=>{const m={};a.forEach(x=>{const k=f(x);m[k]=(m[k]||0)+1});return Object.entries(m).sort((x,y)=>y[1]-x[1]||String(x[0]).localeCompare(y[0]))};
+function groupsHtml(a){
+ const n=a.map(d=>norm(d.rs));
+ return GROUPS.map(([title,cls,list])=>{
+  const items=list.map(s=>{const k=norm(s);return [s,n.filter(x=>x&&(x.includes(k)||(k.includes(x)&&x.length>6))).length]});
+  const mx=Math.max(1,...items.map(i=>i[1])),tot=items.reduce((s,i)=>s+i[1],0);
+  return `<div class="panel"><h2>${title} · ${tot}</h2>${items.map(([s,v])=>`<div class="h"><div class="n">${s}</div><div class="t"><div class="f ${cls}" style="width:${Math.max(8,v/mx*100)}%">${v}</div></div></div>`).join('')}</div>`}).join('')}
+function fleetCards(){
+ const sel=norm($('loc').value);let tp=0,tt=0;
+ const card=(name,n,pn,attr,cur)=>{const v=n?(n-pn)/n*100:0,ok=v>=KPI_TARGET,df=Math.abs(v-KPI_TARGET).toFixed(1);
+  return `<div class="k gk${attr&&sel==norm(name)?' sel':''}" ${attr?`data-p="${name}"`:''} style="--gc:${ok?KPI_PASS:KPI_FAIL}${cur?';cursor:default':''}" title="KPI = (total trucks - pending) / total trucks"><span class="ar" title="${ok?'Above':'Below'} the ${KPI_TARGET}% target">${ok?'▲':'▼'} ${df}%</span><div class="gi"><b>${name}</b><div class="gl">${v.toFixed(1)}%</div><span>${pn} pending · ${n} trucks</span></div></div>`};
+ const cards=Object.entries(FLEET).map(([k,n])=>{const pn=D.filter(d=>norm(d.park)==norm(k)&&isP(d)).length;tp+=pn;tt+=n;return card(k,n,pn,true)}).join('');
+ return cards+card('Total Trucks',tt,tp,false,true)}
+function render(){
+ const loc=$('loc').value,a=D.filter(d=>!loc||d.park===loc);
+ const T=a.length,dn=a.filter(isD).length,pn=a.filter(isP).length;
+ $('top').innerHTML=fleetCards();
+ mileBox('mm',a.filter(d=>d.mile.includes('middle')));
+ $('groups').innerHTML=groupsHtml(a);
+ const ag=a.filter(d=>AGE_ONLY.includes(d.age.toLowerCase()));
+ mtable('age',['Age Class','Completed','Pending','Total'],[...new Set(ag.map(d=>d.age))].sort().map(k=>{const x=ag.filter(d=>d.age==k);return [k,x.filter(isD).length,x.filter(isP).length,x.length]}),true);
+ vbars('brandc',cnt(a.filter(isD),d=>d.brand),dn||1,false);
+ const bp=cnt(a.filter(isP),d=>d.brand),bm=Math.max(1,...bp.map(x=>x[1]));
+ $('brandp').innerHTML=bp.length?`<table class="mt fillt"><thead><tr><th>Brand</th><th>Pending</th></tr></thead><tbody>${bp.map(([n,v])=>`<tr><td>${n}</td><td class="db"><i style="width:${v/bm*70}%"></i><span>${v}</span></td></tr>`).join('')}<tr class="tot"><td>Total</td><td>${bp.reduce((t,x)=>t+x[1],0)}</td></tr></tbody></table>`:'<p class="empty">No Data</p>';
+ const rg=BK.filter(b=>SHOW_DAYS.includes(b[0]));
+ mtable('days',['Ageing Days','Completed','Pending','Total'],BK.map(([n,lo,hi])=>{const x=a.filter(d=>d.days>=lo&&d.days<=hi);return [n,x.filter(isD).length,x.filter(isP).length,x.length]}).filter(r=>r[3]>0));
+ const pv=a.filter(d=>isP(d)&&rg.some(([n,lo,hi])=>d.days>=lo&&d.days<=hi)).sort((x,y)=>y.days-x.days);
+ $('pvc').textContent=pv.length;
+ $('pv').innerHTML=pv.length?`<table class="mt wide"><thead><tr><th>Plate Number</th><th>Make</th><th>Repair Status</th><th>Ageing Days</th></tr></thead><tbody>${pv.map(d=>`<tr><td>${d.plate}</td><td>${d.brand}</td><td>${d.rs}</td><td>${d.dt}</td></tr>`).join('')}</tbody></table>`:'<p class="empty">No Data</p>';
+ const st=$('stf').value,rf=$('rsf').value;
+ const tb=a.filter(d=>(!st||(st=='d'?isD(d):isP(d)))&&(!rf||d.rs===rf));
+ $('cnt').textContent=tb.length+' of '+a.length+' records';
+ $('tb').innerHTML=[...tb].sort((x,y)=>x.brand.localeCompare(y.brand)||x.plate.localeCompare(y.plate)).map(d=>`<tr><td>${d.plate}</td><td>${d.age}</td><td>${d.desig}</td><td>${d.brand}</td><td>${d.dt}</td><td>${d.rs}</td><td>${d.detail}</td></tr>`).join('')}
+$('top').onclick=e=>{const c=e.target.closest('[data-p]');if(!c)return;const k=norm(c.dataset.p),o=[...$('loc').options].find(o=>o.value&&norm(o.value)==k);if(!o)return;$('loc').value=$('loc').value==o.value?'':o.value;render()};
+$('loc').onchange=$('stf').onchange=$('rsf').onchange=render;
+$('f').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(up)};
+$('drop').ondragover=e=>e.preventDefault();
+$('drop').ondrop=e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)f.text().then(up)};
+function route(){const n=location.hash=='#summary'?2:1;
+ document.body.className='v'+n;[1,2].forEach(i=>$('n'+i).classList.toggle('on',i==n))}
+let src='',timer=null;
+const ls={get(k){try{return localStorage.getItem(k)||''}catch(e){return ''}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const setStatus=t=>{$('src').textContent=t};
+function fixUrl(u){u=(u||'').trim();if(!u||/\/d\/e\//.test(u))return u;
+ const m=u.match(/docs\.google\.com\/spreadsheets\/d\/([^/?#]+)/);
+ if(!m)return u;const g=(u.match(/[#&?]gid=(\d+)/)||[])[1];
+ return 'https://docs.google.com/spreadsheets/d/'+m[1]+'/export?format=csv'+(g?'&gid='+g:'')}
+const fetchText=u=>fetch(u).then(r=>{if(!r.ok)throw {http:r.status};return r.text()}).then(t=>{if(/^\s*<(!doctype|html)/i.test(t))throw {html:1};return t});
+const bust=u=>u+(u.includes('?')?'&':'?')+'_='+Date.now();
+const errMsg=e=>e&&e.http?'Could not load the tracker (HTTP '+e.http+'). Make sure the sheet is published to the web as CSV.':e&&e.html?'The link did not return a CSV. Make sure the sheet is published to the web as CSV.':'Could not reach the tracker. Check the link and your connection, or upload a CSV.';
+async function getText(){
+ const tries=[bust(src)];
+ if(/^https?:$/.test(location.protocol)&&!ls.get('trackerUrl'))tries.push('/.netlify/functions/tracker'); // server-side fallback when hosted on Netlify
+ let first;for(const u of tries){try{return await fetchText(u)}catch(e){first=first||e}}throw first}
+async function pull(){if(!src)return;setStatus('Loading…');let t;
+ try{t=await getText()}catch(e){setStatus(errMsg(e));return}
+ try{load(t);setStatus('Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}
+ catch(e){setStatus('Loaded the tracker but could not read the data: '+(e&&e.message||e))}}
+function start(){src=fixUrl(SOURCE_URL||ls.get('trackerUrl'));clearInterval(timer);setStatus('');
+ if(src){pull();if(REFRESH_MIN>0)timer=setInterval(pull,REFRESH_MIN*60000)}}
+function up(t){clearInterval(timer);setStatus('Using uploaded file');load(t)}
+$('conn').onclick=()=>{const u=prompt('Paste the tracker link (Google Sheets: share link, or File > Share > Publish to web > CSV):',ls.get('trackerUrl'));if(u===null)return;ls.set('trackerUrl',u.trim());start()};
+$('rfs').onclick=()=>{if(src)pull();else $('conn').onclick()};
+addEventListener('hashchange',route);route();render();start();
+</script></body></html>
